@@ -1,0 +1,12 @@
+
+Growing up in Rwanda, I've witnessed firsthand the challenges of our public transport system. From my early days going to school to my adult life commuting to work, the process of taking public transport buses has remained unchanged. Long waits, overcrowding, and uncertainty have been the norm, affecting daily commutes for millions.
+
+But what if we could change that? What if we could bring our public transport system into the 21st century?
+
+That’s where my journey to develop [Your App Name] began. This isn't just an app; it's a revolution. Using advanced machine learning, we analyze real-time images from buses and bus stops to provide live updates on bus occupancy, delays, and schedules directly to your phone.
+
+Unlike anything before, [Your App Name] allows passengers to plan their journeys with confidence and helps transport companies optimize their services, reducing operational costs and increasing efficiency.
+
+The success of solutions like Tap&Go shows our readiness to embrace technology that makes our lives easier. [Your App Name] is the next step in this journey, addressing not just payment but the entire commuting experience.
+
+Join me in transforming Rwanda's public transport system. Together, we can make commuting more efficient, reliable, and user-friendly. With [Your App Name], we’re not just catching buses; we’re catching up with the future.

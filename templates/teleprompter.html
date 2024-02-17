@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Teleprompter</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start; /* Align items to the top of the page */
+        height: 100vh;
+        background-color: #f0f0f0;
+      }
+      #controls {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 20px;
+      }
+      #startButton {
+        margin: 0 20px;
+      }
+      button {
+        margin: 0 10px;
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 1em;
+        transition: background-color 0.3s ease;
+      }
+      button:hover {
+        background-color: #0056b3;
+      }
+      #teleprompter {
+        position: fixed; /* Fix the position of the teleprompter text */
+        top: 50px; /* Position it below the timer */
+        width: 100%; /* Make it span the full width of the page */
+        text-align: center; /* Center the text */
+        background-color: rgba(
+          255,
+          255,
+          255,
+          0.7
+        ); /* Add a semi-transparent background */
+        padding: 10px;
+      }
+      #timer {
+        position: fixed; /* Fix the position of the timer */
+        top: 0; /* Position it at the top of the page */
+        width: 100%; /* Make it span the full width of the page */
+        text-align: center; /* Center the text */
+      }
+      #buttonContainer {
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        padding: 10px;
+        background-color: rgba(255, 255, 255, 0.7);
+      }
+    </style>
+  </head>
+  <body>
+    <video id="preview" autoplay></video>
+    <h1 id="timer">Remaining time: 120 seconds</h1>
+    <!-- Move the timer above the teleprompter text -->
+    <p id="teleprompter"></p>
+    <!-- Move the teleprompter text above the controls -->
+    <div id="buttonContainer">
+      <div id="controls">
+        <button id="prevButton">Last Sentence</button>
+        <button id="startButton">Start</button>
+        <button id="nextButton">Next Sentence</button>
+      </div>
+      <button id="stopButton">Stop</button>
+      <button id="pauseButton">Pause</button>
+    </div>
+
+    <script>
+      var text = "{{ text }}";
+      var speed = 10; // Replace 10 with the desired value for the speed.
+      var countdown = 120;
+      var sentences = text.split(".");
+      var sentenceIndex = 0;
+      var intervalId;
+      var timeoutId;
+      var isPaused = false;
+      var mediaRecorder;
+      var recordedBlobs;
+
+      function startRecording() {
+        navigator.mediaDevices
+          .getUserMedia({ video: true, audio: true })
+          .then(function (stream) {
+            mediaRecorder = new MediaRecorder(stream);
+            mediaRecorder.ondataavailable = function (event) {
+              if (event.data && event.data.size > 0) {
+                recordedBlobs.push(event.data);
+              }
+            };
+            mediaRecorder.start(10); // collect 10ms of data
+            document.querySelector("video#preview").srcObject = stream;
+            recordedBlobs = [];
+          })
+          .catch(function (err) {
+            console.error("getUserMedia() failed: ", err);
+          });
+      }
+
+      function stopRecording() {
+        mediaRecorder.stop();
+        const blob = new Blob(recordedBlobs, { type: "video/webm" });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.style.display = "none";
+        a.href = url;
+        a.download = "test.webm";
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(function () {
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(url);
+        }, 100);
+      }
+
+      function startTeleprompter() {
+        startRecording();
+        intervalId = setInterval(function () {
+          if (countdown <= 0) {
+            document.getElementById("timer").innerText = "Time's up!";
+            clearInterval(intervalId);
+            return;
+          }
+          countdown--;
+          document.getElementById("timer").innerText =
+            "Remaining time: " + countdown + " seconds";
+        }, 1000);
+
+        displaySentence();
+      }
+
+      function stopTeleprompter() {
+        stopRecording();
+        clearInterval(intervalId);
+        clearTimeout(timeoutId);
+        sentenceIndex = 0;
+        document.getElementById("teleprompter").innerText = "";
+      }
+
+      function pauseTeleprompter() {
+        isPaused = !isPaused;
+        document.getElementById("pauseButton").innerText = isPaused
+          ? "Resume"
+          : "Pause";
+      }
+
+      function prevSentence() {
+        if (sentenceIndex > 0) sentenceIndex--;
+        clearTimeout(timeoutId);
+        displaySentence();
+      }
+
+      function nextSentence() {
+        if (sentenceIndex < sentences.length - 1) sentenceIndex++;
+        clearTimeout(timeoutId);
+        displaySentence();
+      }
+
+      function displaySentence() {
+        if (isPaused || sentenceIndex >= sentences.length) {
+          return;
+        }
+        var sentence = sentences[sentenceIndex];
+        document.getElementById("teleprompter").innerText = sentence + ".";
+        sentenceIndex++;
+        timeoutId = setTimeout(displaySentence, speed * 1000);
+      }
+
+      document
+        .getElementById("startButton")
+        .addEventListener("click", startTeleprompter);
+      document
+        .getElementById("stopButton")
+        .addEventListener("click", stopTeleprompter);
+      document
+        .getElementById("pauseButton")
+        .addEventListener("click", pauseTeleprompter);
+      document
+        .getElementById("prevButton")
+        .addEventListener("click", prevSentence);
+      document
+        .getElementById("nextButton")
+        .addEventListener("click", nextSentence);
+    </script>
+  </body>
+</html>
